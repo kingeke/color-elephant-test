@@ -15,6 +15,23 @@ class CreateRecordsTable extends Migration
     {
         Schema::create('records', function (Blueprint $table) {
             $table->id();
+            $table->unsignedInteger('transaction_id');
+            $table->string('idcontrato')->unique();
+            $table->string('nAnuncio')->nullable();
+            $table->string('tipoContrato')->nullable();
+            $table->string('tipoprocedimento')->nullable();
+            $table->longText('objectoContrato')->nullable();
+            $table->longText('adjudicantes')->nullable();
+            $table->longText('adjudicatarios')->nullable();
+            $table->date('dataPublicacao')->nullable();
+            $table->date('dataCelebracaoContrato')->nullable();
+            $table->double('precoContratual')->nullable();
+            $table->longText('cpv')->nullable();
+            $table->double('prazoExecucao')->nullable();
+            $table->longText('localExecucao')->nullable();
+            $table->string('fundamentacao')->nullable();
+            $table->boolean('read')->default(false);
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
     }
@@ -29,19 +46,3 @@ class CreateRecordsTable extends Migration
         Schema::dropIfExists('records');
     }
 }
-
-// idcontrato
-// nAnuncio
-// tipoContrato
-// tipoprocedimento
-// objectoContrato
-// adjudicantes
-// adjudicatarios
-// dataPublicacao
-// dataCelebracaoContrato
-// precoContratual
-// cpv
-// prazoExecucao
-// localExecucao
-// fundamentacao
-

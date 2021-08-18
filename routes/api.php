@@ -20,4 +20,6 @@ Route::get('/', function(){
     return messageResponse('success', 'Hello from API.');
 });
 
+Route::resource('transactions', 'TransactionController');
+
 Route::resource('records', 'RecordController');

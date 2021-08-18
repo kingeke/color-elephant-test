@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Imports\ExcelImport;
 use App\Models\Record;
 use Illuminate\Http\Request;
-use Excel;
 
 class RecordController extends Controller
 {
@@ -14,47 +12,24 @@ class RecordController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Imports the data from excel and queues to Model creation
-     * @author Chinonso
-     * @param  \Illuminate\Http\Request  $request
-     * @return JsonResponse
-     */
-    public function store(Request $request)
+    public function index(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx',
+            "from"       => "nullable|date|date_format:Y-m-d",
+            "to"         => "nullable|date|date_format:Y-m-d",
+            "amount_min" => "nullable|numeric",
+            "amount_max" => "nullable|numeric",
         ]);
-        
-        try {
 
-            $excelImport = new ExcelImport;
+        //run scope queries on model, this can be viewed in the model class
+        $records = Record::dataCelebracaoContrato($request)
+            ->precoContratual($request)
+            ->adjudicatarios($request);
 
-            Excel::import($excelImport, $request->file('file'));
-            
-            return messageResponse('success', 'Data will be imported in the background.');
-
-        } catch (\Exception $e) {
-
-            report($e);
-
-            return back()->with('message', messageResponse('danger', "An error occurred: {$e->getMessage()}"));
-        }
+        return response()->json([
+            'status'  => 'success',
+            'records' => $records->latest()->paginate(50),
+        ]);
     }
 
     /**
@@ -63,42 +38,27 @@ class RecordController extends Controller
      * @param  \App\Models\Record  $record
      * @return \Illuminate\Http\Response
      */
-    public function show(Record $record)
+    public function show(Request $request, Record $record)
     {
-        //
-    }
+        //if request has isRead return the read column on the record
+        if ($request->has('isRead')) {
+            return response()->json([
+                'status' => 'success',
+                'read'   => $record->read,
+            ]);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Record  $record
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Record $record)
-    {
-        //
-    }
+        //once a user requests the resource, mark it as read
+        if (!$record->read) {
+            $record->update([
+                'read'    => true,
+                'read_at' => now()->toDateTimeString(),
+            ]);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Record  $record
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Record $record)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Record  $record
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Record $record)
-    {
-        //
+        return response()->json([
+            'status' => 'success',
+            'record' => $record,
+        ]);
     }
 }
