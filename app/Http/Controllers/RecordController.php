@@ -47,7 +47,7 @@ class RecordController extends Controller
 
             Excel::import($excelImport, $request->file('file'));
             
-            dd('done');
+            return messageResponse('success', 'Data will be imported in the background.');
 
         } catch (\Exception $e) {
 
